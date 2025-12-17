@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signal Classification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .homeButton {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 10;
+      }
+      .homeButton button {
+        height: 2em;
+        width: 4.8em !important;
+        background: cornflowerblue;
+        font-size: large;
+        border-radius: 7px;
+      }
+      .banner {
+        width: 100%;
+        height: 10%;
+        background-color: #c1156f;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .container {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .input-group {
+        margin-bottom: 15px;
+        width: 100%;
+        max-width: 400px;
+      }
+      .input-group label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      .input-group input,
+      .input-group select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+      .buttons {
+        margin-top: 20px;
+      }
+      .buttons button {
+        padding: 10px 20px;
+        margin-right: 10px;
+        border: none;
+        cursor: pointer;
+        background-color: #333;
+        color: white;
+        transition: background-color 0.3s;
+      }
+      .buttons button:hover {
+        background-color: #555;
+      }
+      .prediction {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+      }
+      .prediction h2 {
+        margin-top: 0;
+      }
+      .prediction .result {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="homeButton">
+      <button onclick="location.href='/'">Home</button>
+      <button onclick="location.href='/signalClassification'">Go back</button>
+    </div>
+    <div class="banner">
+      <h1>SDR Sample Collector</h1>
+      <p>By Chandhar Research Labs</p>
+    </div>
+    <div class="container">
+      <div class="input-group">
+        <label for="model">Model type</label>
+        <select id="model" name="model">
+          <option value="tflite">Tensorflow Lite</option>
+          <option value="svm">Support Vector Machine model</option>
+          <option value="dt">Decision Tree model</option>
+          <option value="highSNR">High SNR model</option>
+          <option value="rf">Random Forest model</option>
+          <option value="nb">Naive Bayes model</option>
+        </select>
+      </div>
+      <form class="input-group" id="upload-form" enctype="multipart/form-data">
+        <div class="row">
+          <div class="input-group">
+            <label for="model">Upload Model</label>
+            <input type="file" id="model-file" name="model-file" />
+          </div>
+          <div class="buttons">
+            <button type="submit">Upload Model</button>
+          </div>
+        </div>
+      </form>
+      <div class="input-group">
+        <label for="freq">Frequency (Hz)</label>
+        <input type="number" id="freq" name="freq" value="940600000" />
+      </div>
+      <div class="input-group">
+        <label for="sample_rate">Sample Rate</label>
+        <input
+          type="number"
+          id="sample_rate"
+          name="sample_rate"
+          value="2400000"
+        />
+      </div>
+      <div class="input-group">
+        <label for="decimation_rate">Decimation Rate</label>
+        <input
+          type="number"
+          id="decimation_rate"
+          name="decimation_rate"
+          value="12"
+        />
+      </div>
+      <div class="buttons">
+        <button id="predict-button">Predict</button>
+      </div>
+      <div class="prediction" id="prediction">
+        <p>Predictions</p>
+        <div class="result" id="result"></div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const modelType = document.getElementById("modelType");
+        const uploadForm = document.getElementById("upload-form");
+        const predictButton = document.getElementById("predict-button");
+        const resultDiv = document.getElementById("result");
+        let uploadedFileName = "model_rf.sav";
+
+        uploadForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const formData = new FormData(uploadForm);
+          fetch("/upload_model", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert(data.message);
+              uploadedFileName = data.filename;
+            });
+        });
+
+        predictButton.addEventListener("click", () => {
+          const data = {
+            model: uploadedFileName,
+            modelType: modelType,
+            freq: document.getElementById("freq").value,
+            sample_rate: document.getElementById("sample_rate").value,
+            decimation_rate: document.getElementById("decimation_rate").value,
+          };
+          fetch("/predict", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              resultDiv.innerHTML = `Frequency: ${
+                data.frequency_mhz
+              } MHz<br>Label: ${
+                data.label
+              }<br>Confidence: ${data.confidence.toFixed(2)}%`;
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

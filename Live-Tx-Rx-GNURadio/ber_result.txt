@@ -1,0 +1,201 @@
+Bit Errors: 2
+Total Bits Compared: 1632
+BER: 0.00122549
+Bit Errors: 7
+Total Bits Compared: 1632
+BER: 0.00428922
+Bit Errors: 8
+Total Bits Compared: 1632
+BER: 0.00490196
+Bit Errors: 6
+Total Bits Compared: 1632
+BER: 0.00367647
+Bit Errors: 9
+Total Bits Compared: 1632
+BER: 0.00551471
+Bit Errors: 8
+Total Bits Compared: 1632
+BER: 0.00490196
+Bit Errors: 2
+Total Bits Compared: 1632
+BER: 0.00122549
+Bit Errors: 3
+Total Bits Compared: 1632
+BER: 0.00183824
+Bit Errors: 11
+Total Bits Compared: 1632
+BER: 0.00674020
+Bit Errors: 15
+Total Bits Compared: 1632
+BER: 0.00919118
+Bit Errors: 17
+Total Bits Compared: 1632
+BER: 0.01041667
+Bit Errors: 11
+Total Bits Compared: 1632
+BER: 0.00674020
+Bit Errors: 2
+Total Bits Compared: 1632
+BER: 0.00122549
+Bit Errors: 2
+Total Bits Compared: 1632
+BER: 0.00122549
+Bit Errors: 8
+Total Bits Compared: 1632
+BER: 0.00490196
+Bit Errors: 7
+Total Bits Compared: 1632
+BER: 0.00428922
+Bit Errors: 11
+Total Bits Compared: 1632
+BER: 0.00674020
+Bit Errors: 9
+Total Bits Compared: 1632
+BER: 0.00551471
+Bit Errors: 4
+Total Bits Compared: 1632
+BER: 0.00245098
+Bit Errors: 2
+Total Bits Compared: 1632
+BER: 0.00122549
+Bit Errors: 9
+Total Bits Compared: 1632
+BER: 0.00551471
+Bit Errors: 5
+Total Bits Compared: 1632
+BER: 0.00306373
+Bit Errors: 10
+Total Bits Compared: 1632
+BER: 0.00612745
+Bit Errors: 8
+Total Bits Compared: 1632
+BER: 0.00490196
+Bit Errors: 4
+Total Bits Compared: 1632
+BER: 0.00245098
+Bit Errors: 2
+Total Bits Compared: 1632
+BER: 0.00122549
+Bit Errors: 12
+Total Bits Compared: 1632
+BER: 0.00735294
+Bit Errors: 13
+Total Bits Compared: 1632
+BER: 0.00796569
+Bit Errors: 14
+Total Bits Compared: 1632
+BER: 0.00857843
+Bit Errors: 708
+Total Bits Compared: 1632
+BER: 0.43382353
+Bit Errors: 909
+Total Bits Compared: 1632
+BER: 0.55698529
+Bit Errors: 222
+Total Bits Compared: 1152
+BER: 0.19270833
+Bit Errors: 117
+Total Bits Compared: 1104
+BER: 0.10597826
+Bit Errors: 355
+Total Bits Compared: 1504
+BER: 0.23603723
+Bit Errors: 242
+Total Bits Compared: 1104
+BER: 0.21920290
+Bit Errors: 843
+Total Bits Compared: 1632
+BER: 0.51654412
+Bit Errors: 212
+Total Bits Compared: 1200
+BER: 0.17666667
+Bit Errors: 105
+Total Bits Compared: 1104
+BER: 0.09510870
+Bit Errors: 470
+Total Bits Compared: 1424
+BER: 0.33005618
+Bit Errors: 174
+Total Bits Compared: 1120
+BER: 0.15535714
+Bit Errors: 415
+Total Bits Compared: 1192
+BER: 0.34815436
+Bit Errors: 661
+Total Bits Compared: 1632
+BER: 0.40502451
+Bit Errors: 513
+Total Bits Compared: 1632
+BER: 0.31433824
+Bit Errors: 810
+Total Bits Compared: 1632
+BER: 0.49632353
+Bit Errors: 164
+Total Bits Compared: 1368
+BER: 0.11988304
+Bit Errors: 881
+Total Bits Compared: 1632
+BER: 0.53982843
+Bit Errors: 144
+Total Bits Compared: 1104
+BER: 0.13043478
+Bit Errors: 929
+Total Bits Compared: 1632
+BER: 0.56924020
+Bit Errors: 548
+Total Bits Compared: 1632
+BER: 0.33578431
+Bit Errors: 221
+Total Bits Compared: 1104
+BER: 0.20018116
+Bit Errors: 615
+Total Bits Compared: 1632
+BER: 0.37683824
+Bit Errors: 228
+Total Bits Compared: 840
+BER: 0.27142857
+Bit Errors: 79
+Total Bits Compared: 1632
+BER: 0.04840686
+Bit Errors: 350
+Total Bits Compared: 1632
+BER: 0.21446078
+Bit Errors: 216
+Total Bits Compared: 864
+BER: 0.25000000
+Bit Errors: 33
+Total Bits Compared: 1368
+BER: 0.02412281
+Bit Errors: 174
+Total Bits Compared: 792
+BER: 0.21969697
+Bit Errors: 121
+Total Bits Compared: 1104
+BER: 0.10960145
+Bit Errors: 350
+Total Bits Compared: 1504
+BER: 0.23271277
+Bit Errors: 701
+Total Bits Compared: 1632
+BER: 0.42953431
+Bit Errors: 224
+Total Bits Compared: 936
+BER: 0.23931624
+Bit Errors: 177
+Total Bits Compared: 1368
+BER: 0.12938596
+Bit Errors: 904
+Total Bits Compared: 1632
+BER: 0.55392157
+Bit Errors: 167
+Total Bits Compared: 1368
+BER: 0.12207602
+Bit Errors: 929
+Total Bits Compared: 1632
+BER: 0.56924020
+Bit Errors: 153
+Total Bits Compared: 1104
+BER: 0.13858696
+Bit Errors: 889
+Total Bits Compared: 1632
+BER: 0.54473039

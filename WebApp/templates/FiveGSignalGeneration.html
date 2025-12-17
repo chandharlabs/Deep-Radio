@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>5G Signal Generator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .homeButton {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 10;
+      }
+      .homeButton button {
+        height: 2em;
+        width: 4.8em !important;
+        background: cornflowerblue;
+        font-size: large;
+        border-radius: 7px;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      label {
+        display: inline-block;
+        width: 150px;
+        margin-bottom: 10px;
+      }
+      input {
+        margin-bottom: 10px;
+        width: 200px;
+      }
+      button {
+        margin: 10px 0;
+      }
+      .banner {
+        width: 100%;
+        height: 10%;
+        background-color: blue;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .container {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .container button {
+        width: 200px;
+        padding: 10px;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        background-color: green;
+        transition: background-color 0.3s;
+      }
+      .container button:hover {
+        background-color: darkgreen;
+      }
+      .button-row {
+        display: flex;
+        justify-content: center;
+      }
+      .button-row button {
+        margin: 0 10px;
+      }
+      .status-message {
+        min-width: 30vw;
+        min-height: 10vh;
+        /* background: gray; */
+        border: gray solid 5px;
+        padding: 5px;
+        border-radius: 8px;
+      }
+      pre {
+        text-wrap-mode: wrap;
+        background: cornsilk;
+        padding: 5px;
+      }
+      .buttonSection {
+        text-align: center;
+      }
+      .InfoBox {
+        position: absolute;
+        right: 1em;
+        border: 1px solid black;
+        max-width: 25vw;
+        align-self: anchor-center;
+        border-radius: 5px;
+        padding: 7px;
+        font-size: small;
+      }
+    </style>
+  </head>
+  <body>
+    <body>
+        <div class="homeButton">
+          <button onclick="location.href='/'">Home</button>
+          <button onclick="location.href='/'">Go back</button>
+        </div>
+        <div class="InfoBox">
+          <b>Format for adding new symbol :</b>
+          <pre><code>(<br/>'{SymbolName}', <br/>{SymbolPosition}, <br/>{FrameNumber>}, <br/>{StartingSubcarrierIndex}, <br/>{TimeBlocks}, <br/>{FrequencyBlocks}, <br/>{ModulationType}<br/>)</code></pre>
+          <br/>
+          <i>Example :</i> ('PRB', 17, 0, 300, 42, 72, 'qpsk')
+          <br/>
+          <b>Note :</b>If you are adding a repeating message, only first two values are required. Else all values are cumpulsory.
+          <br/>
+          <br/>
+          <b>Supported Values</b>
+          <br/>
+          SymbolName = <i>PSS, SSS, PRB, PBCH, PDSCH</i>
+          <br/>
+          ModulationType <i>bpsk, qpsk, 8psk, 16qam, 64qam</i>
+        </div>
+    <div class="banner">
+      <h1>5G Signal Generator</h1>
+      <p>By Chandhar Research Labs Pvt. Ltd.</p>
+    </div>
+    <div class="container">
+      <form id="signal-generator-form">
+        <label for="mu">Mu:</label>
+        <input type="number" id="mu" name="mu" value="0" /><br />
+
+        <label for="nrb">NRB:</label>
+        <input type="number" id="nrb" name="nrb" value="50" /><br />
+
+        <label for="guard">Guard:</label>
+        <input type="number" id="guard" name="guard" value="2" /><br />
+
+        <label for="total_length">Total Symbols:</label>
+        <input
+          type="number"
+          id="total_length"
+          name="total_length"
+          value="140"
+        /><br />
+
+        <label for="nfft">NFFT:</label>
+        <input type="number" id="nfft" name="nfft" value="1024" /><br />
+
+        <label for="nfft">Number of frames:</label>
+        <input type="number" id="numFrames" name="numFrames" value="1" /><br />
+
+        <label for="sequence">Configurations:</label>
+        <textarea name="sequence" id="sequence" style="height: 111px; width: 270px;">[('PSS', 0), ('SSS', 2), ('PDCCH', 16, 0, 0, 1, 928, 'qpsk'), ('PDSCH', 17, 0, 300, 42, 72, 'qpsk')]</textarea>
+        <br />
+        <div class="buttonSection">
+          <button type="button" id="generate-button">Generate</button>
+        </div>
+      </form>
+      <h2>Status</h2>
+      <pre class="status-message" id="status-message"></pre>
+      <div class="button-row">
+        <button type="button" id="open-inspectrum-button" disabled>
+          Open in Inspectrum
+        </button>
+        <button type="button" id="download-button" disabled>
+          Download File
+        </button>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const generateButton = document.getElementById("generate-button");
+        const openInspectrumButton = document.getElementById(
+          "open-inspectrum-button"
+        );
+        const downloadButton = document.getElementById("download-button");
+        const statusMessage = document.getElementById("status-message");
+        let generatedFileName = "";
+
+        openInspectrumButton.style.backgroundColor = "gray";
+        downloadButton.style.backgroundColor = "gray";
+
+        generateButton.addEventListener("click", () => {
+          const formData = new FormData(
+            document.getElementById("signal-generator-form")
+          );
+          generateButton.disabled = true;
+          generateButton.style.backgroundColor = "yellow";
+          generateButton.style.color = "black";
+          generateButton.textContent = "Processing...";
+
+          fetch("/generate_5g_signal", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              statusMessage.textContent = data.message;
+              generatedFileName = data.filename;
+              generateButton.disabled = false;
+              generateButton.style.backgroundColor = "green";
+              generateButton.style.color = "white";
+              generateButton.textContent = "Generate again";
+              openInspectrumButton.disabled = false;
+              openInspectrumButton.style.backgroundColor = "cyan";
+              downloadButton.disabled = false;
+              downloadButton.style.backgroundColor = "blue";
+            })
+            .catch((error) => {
+              statusMessage.textContent = "An error occurred: " + error;
+              generateButton.disabled = false;
+              generateButton.style.backgroundColor = "green";
+              generateButton.style.color = "white";
+              generateButton.textContent = "Generate";
+            });
+        });
+
+        openInspectrumButton.addEventListener("click", () => {
+          fetch("/open_in_inspectrum", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ filename: generatedFileName }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              statusMessage.textContent = data.message;
+            })
+            .catch((error) => {
+              statusMessage.textContent = "An error occurred: " + error;
+            });
+        });
+
+        downloadButton.addEventListener("click", () => {
+          if (generatedFileName) {
+            window.location.href = `/download_iq_file?filename=${generatedFileName}`;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FM Transmission</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .homeButton {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 10;
+      }
+      .homeButton button {
+        height: 2em;
+        width: 4.8em !important;
+        background: cornflowerblue;
+        font-size: large;
+        border-radius: 7px;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      label {
+        display: inline-block;
+        width: 150px;
+        margin-bottom: 10px;
+      }
+      input {
+        margin-bottom: 10px;
+        width: 200px;
+      }
+      button {
+        margin: 10px 0;
+      }
+      .banner {
+        width: 100%;
+        height: 10%;
+        background-color: blue;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .container {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .container button {
+        width: 200px;
+        padding: 10px;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        background-color: green;
+        transition: background-color 0.3s;
+      }
+      .container button:hover {
+        background-color: darkgreen;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="homeButton">
+      <button onclick="location.href='/'">Home</button>
+      <button onclick="location.href='/'">Go back</button>
+    </div>
+    <div class="banner">
+      <h1>FM Transmission</h1>
+      <p>By Chandhar Research Labs Pvt. Ltd.</p>
+    </div>
+    <div class="container">
+      <form id="fmtx-form">
+        <label for="samp_rate">Sample Rate (Hz):</label>
+        <input
+          type="number"
+          id="samp_rate"
+          name="samp_rate"
+          value="2000000"
+        /><br />
+
+        <label for="audio_rate">Audio Rate (Hz):</label>
+        <input
+          type="number"
+          id="audio_rate"
+          name="audio_rate"
+          value="48000"
+        /><br />
+
+        <label for="center_freq">Center Frequency (Hz):</label>
+        <input
+          type="number"
+          id="center_freq"
+          name="center_freq"
+          value="90050000"
+        /><br />
+
+        <label for="gain">Gain (dB):</label>
+        <input type="number" id="gain" name="gain" value="20" /><br />
+
+        <label for="bb_gain">Baseband Gain (dB):</label>
+        <input type="number" id="bb_gain" name="bb_gain" value="15" /><br />
+
+        <label for="if_gain">IF Gain (dB):</label>
+        <input type="number" id="if_gain" name="if_gain" value="20" /><br />
+
+        <label for="bandwidth">Bandwidth (Hz):</label>
+        <input
+          type="number"
+          id="bandwidth"
+          name="bandwidth"
+          value="40000"
+        /><br />
+
+        <label for="wavfile">WAV File Path:</label>
+        <input
+          type="text"
+          id="wavfile"
+          name="wavfile"
+          value="/home/prabhuchandhar/Desktop/GNU-Examples/Ullaallaa.wav"
+        /><br />
+
+        <button type="button" id="start-button">Start Transmission</button>
+        <button type="button" id="stop-button" disabled>
+          Stop Transmission
+        </button>
+      </form>
+      <h2>Status</h2>
+      <pre id="status-message"></pre>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const startButton = document.getElementById("start-button");
+        const stopButton = document.getElementById("stop-button");
+        const statusMessage = document.getElementById("status-message");
+        let processId = null;
+
+        stopButton.style.backgroundColor = "gray";
+        stopButton.disabled = true;
+
+        startButton.addEventListener("click", () => {
+          const formData = new FormData(document.getElementById("fmtx-form"));
+          startButton.disabled = true;
+          startButton.style.backgroundColor = "yellow";
+          startButton.style.color = "black";
+          startButton.textContent = "Transmiting...";
+          stopButton.disabled = false;
+          stopButton.style.backgroundColor = "red";
+
+          fetch("/start_fmtx", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              statusMessage.textContent = data.message;
+              processId = data.process_id;
+              startButton.disabled = false;
+              //startButton.style.backgroundColor = "green";
+              //startButton.textContent = "Start Transmission";
+              stopButton.disabled = false;
+            })
+            .catch((error) => {
+              statusMessage.textContent = "An error occurred: " + error;
+              startButton.disabled = false;
+              startButton.style.backgroundColor = "green";
+              startButton.style.color = "black";
+              startButton.textContent = "Start Transmission";
+            });
+        });
+
+        stopButton.addEventListener("click", () => {
+          fetch("/stop_fmtx", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ process_id: processId }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              statusMessage.textContent = data.message;
+              stopButton.disabled = true;
+              stopButton.style.backgroundColor = "gray";
+              startButton.disabled = false;
+              startButton.style.backgroundColor = "green";
+              startButton.textContent = "Start Transmission";
+            })
+            .catch((error) => {
+              statusMessage.textContent = "An error occurred: " + error;
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

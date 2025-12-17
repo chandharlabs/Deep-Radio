@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signal Classification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .homeButton {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 10;
+      }
+      .homeButton button {
+        height: 2em;
+        width: 4.8em !important;
+        background: cornflowerblue;
+        font-size: large;
+        border-radius: 7px;
+      }
+      .banner {
+        width: 100%;
+        height: 10%;
+        background-color: #c1156f;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .container {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .inputsContainer {
+        width: 40%;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+      .input-group label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      .input-group input,
+      .input-group select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+      .buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        margin-top: 20px;
+        text-align: center;
+      }
+      .buttons button {
+        padding: 10px 20px;
+        margin-right: 10px;
+        border: none;
+        cursor: pointer;
+      }
+      .buttons button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      .start-button {
+        background-color: green;
+        color: white;
+        width: 10em;
+        font-size: larger;
+        font-weight: 800;
+      }
+      .start-button.capturing {
+        background-color: yellow;
+        color: black;
+      }
+      .stop-button {
+        background-color: red;
+        color: white;
+        width: 10em;
+        font-size: larger;
+        font-weight: 800;
+      }
+      .download-button {
+        background-color: blue;
+        color: white;
+        font-size: large;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="homeButton">
+      <button onclick="location.href='/'">Home</button>
+      <button onclick="location.href='/signalClassification'">Go back</button>
+    </div>
+    <div class="banner">
+      <h1>Signal Classification</h1>
+      <p>By Chandhar Research Labs</p>
+    </div>
+    <div class="container">
+      <div class="inputsContainer">
+        <div class="input-group">
+          <label for="classname">Class Name</label>
+          <select id="classname" name="classname">
+            <option value="wfm">WFM</option>
+            <option value="bpsk">BPSK</option>
+            <option value="qpsk">QPSK</option>
+            <option value="cpfsk">CPFSK</option>
+            <option value="fsk">FSK</option>
+            <option value="16-qam">16 QAM</option>
+            <option value="64-qam">64 QAM</option>
+            <option value="gmsk">GMSK</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="num_classes">Frequency</label>
+          <input type="number" id="freq" name="freq" value="810000000" />
+        </div>
+        <div class="input-group">
+          <label for="sample_rate">Sample Rate</label>
+          <input
+            type="number"
+            id="sample_rate"
+            name="sample_rate"
+            value="2400000"
+          />
+        </div>
+        <div class="input-group">
+          <label for="num_classes">Gain</label>
+          <input type="number" id="gain" name="gain" value="40" />
+        </div>
+        <div class="input-group">
+          <label for="decimation_rate">Decimation Rate</label>
+          <input
+            type="number"
+            id="decimation_rate"
+            name="decimation_rate"
+            value="12"
+          />
+        </div>
+        <div class="input-group">
+          <label for="num_classes">Number of Samples</label>
+          <input type="number" id="samples" name="samples" value="1221376" />
+        </div>
+        <div class="input-group">
+          <label for="num_classes"
+            >Total number of Samples for training and testing</label
+          >
+          <input
+            type="number"
+            id="samplesForTrainingAndTesting"
+            name="samplesForTrainingAndTesting"
+            value="500"
+          />
+        </div>
+        <div class="input-group">
+          <label for="num_classes">Percentage of samples for Testing</label>
+          <input
+            type="number"
+            id="percentageForTestData"
+            name="percentageForTestData"
+            value="30"
+            min="1"
+            max="100"
+          />
+        </div>
+      </div>
+      <div class="buttons">
+        <div>
+          <button id="start-button" class="start-button">Start</button>
+          <button id="stop-button" class="stop-button" disabled>Stop</button>
+        </div>
+        <div>
+          <button id="download-button" class="download-button" disabled>
+            Download Data
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const startButton = document.getElementById("start-button");
+        const stopButton = document.getElementById("stop-button");
+        const downloadButton = document.getElementById("download-button");
+        const inputs = document.querySelectorAll("input, select");
+
+        //inputs.forEach(input => {
+        //    input.addEventListener('input', () => {
+        //        if (Array.from(inputs).every(input => input.value)) {
+        //            startButton.disabled = false;
+        //        } else {
+        //            startButton.disabled = true;
+        //        }
+        //    });
+        //});
+
+        startButton.addEventListener("click", () => {
+          startButton.disabled = true;
+          startButton.classList.add("capturing");
+          startButton.textContent = "Capturing...";
+          stopButton.disabled = false;
+          const data = {
+            classname: document.getElementById("classname").value,
+            freq: document.getElementById("freq").value,
+            sample_rate: document.getElementById("sample_rate").value,
+            gain: document.getElementById("gain").value,
+            decimation_rate: document.getElementById("decimation_rate").value,
+            samples: document.getElementById("samples").value,
+            samplesForTrainingAndTesting: document.getElementById(
+              "samplesForTrainingAndTesting"
+            ).value,
+            percentageForTestData: document.getElementById(
+              "percentageForTestData"
+            ).value,
+          };
+          console.log("Data for posting : ", data);
+          fetch("/start", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json", // Set the correct content type
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "Capture started") {
+                downloadButton.disabled = true;
+                startButton.disabled = false;
+                startButton.classList.remove("capturing");
+                startButton.textContent = "Start";
+                stopButton.disabled = true;
+                downloadButton.disabled = false;
+              }
+            });
+        });
+
+        stopButton.addEventListener("click", () => {
+          fetch("/stop", {
+            method: "POST",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "Capture stopped") {
+                startButton.disabled = false;
+                startButton.classList.remove("capturing");
+                startButton.textContent = "Start";
+                stopButton.disabled = true;
+                downloadButton.disabled = false;
+              }
+            });
+        });
+
+        downloadButton.addEventListener("click", () => {
+          fetch("/download", {
+            method: "POST",
+          })
+            .then((response) => response.blob())
+            .then((blob) => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.style.display = "none";
+              a.href = url;
+              a.download = "data.zip";
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

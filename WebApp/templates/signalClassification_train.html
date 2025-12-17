@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Model Training</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .homeButton {
+        position: fixed;
+        top: 1em;
+        left: 1em;
+        z-index: 10;
+      }
+      .homeButton button {
+        height: 2em;
+        width: 4.8em !important;
+        background: cornflowerblue;
+        font-size: large;
+        border-radius: 7px;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      label {
+        display: inline-block;
+        width: 150px;
+      }
+      input,
+      select {
+        margin-bottom: 10px;
+        width: 200px;
+      }
+      button {
+        margin-top: 10px;
+      }
+      .banner {
+        width: 100%;
+        height: 10%;
+        background-color: #c1156f;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .container {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .container button {
+        width: 190px;
+        padding: 15px;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        background-color: #2b7511;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+      }
+      .container button:hover {
+        background-color: #555;
+      }
+      .buttonsSection {
+        display: flex;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="homeButton">
+      <button onclick="location.href='/'">Home</button>
+      <button onclick="location.href='/signalClassification'">Go back</button>
+    </div>
+    <div class="banner">
+      <h1>Model Training</h1>
+      <p>By Chandhar Research Labs</p>
+    </div>
+    <div class="container">
+      <form id="train-form">
+        <label for="classes">Classes:</label>
+        <input
+          type="text"
+          id="classes"
+          name="classes"
+          placeholder="BPSK, QPSK, ..."
+        /><br />
+
+        <label for="validation_size">Validation Size:</label>
+        <input
+          type="number"
+          id="validation_size"
+          name="validation_size"
+          value="0.3"
+        /><br />
+
+        <label for="DIM1">DIM1:</label>
+        <input type="number" id="DIM1" name="DIM1" value="28" /><br />
+
+        <label for="DIM2">DIM2:</label>
+        <input type="number" id="DIM2" name="DIM2" value="28" /><br />
+
+        <label for="optimizer">Optimizer:</label>
+        <select id="optimizer" name="optimizer">
+          <option value="adam">Adam</option>
+          <option value="sgd">SGD</option>
+          <option value="rmsprop">RMSProp</option></select
+        ><br />
+
+        <label for="metrics">Metrics:</label>
+        <select id="metrics" name="metrics">
+          <option value="accuracy">Accuracy</option>
+          <option value="precision">Precision</option>
+          <option value="recall">Recall</option></select
+        ><br />
+
+        <label for="epochs">Epochs:</label>
+        <input type="number" id="epochs" name="epochs" value="70" /><br />
+
+        <label for="batch_size">Batch Size:</label>
+        <input
+          type="number"
+          id="batch_size"
+          name="batch_size"
+          value="128"
+        /><br />
+
+        <label for="shuffle">Shuffle:</label>
+        <input type="checkbox" id="shuffle" name="shuffle" checked /><br />
+
+        <label for="train_path">Train Path:</label>
+        <input
+          type="file"
+          id="train_path"
+          name="train_path"
+          webkitdirectory
+          directory
+        /><br />
+
+        <div class="buttonsSection">
+          <button type="button" id="start-button">Start Training</button>
+        </div>
+      </form>
+      <div class="buttonsSection">
+        <button id="download-button" disabled>Download Model</button>
+      </div>
+
+      <h2>Status:</h2>
+      <pre id="status-message"></pre>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const startButton = document.getElementById("start-button");
+        const downloadButton = document.getElementById("download-button");
+        const statusMessage = document.getElementById("status-message");
+        let modelFileName = "";
+
+        downloadButton.disabled = true;
+        downloadButton.style.backgroundColor = "#555";
+
+        startButton.addEventListener("click", () => {
+          const formData = new FormData(document.getElementById("train-form"));
+          startButton.disabled = true;
+          startButton.style.backgroundColor = "yellow";
+          startButton.textContent = "Processing...";
+
+          fetch("/start_training", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              statusMessage.textContent = data.message;
+              modelFileName = data.model_file;
+              startButton.disabled = false;
+              startButton.style.backgroundColor = "#333";
+              startButton.textContent = "Start Training";
+              downloadButton.disabled = !data.model_generated;
+              downloadButton.style.backgroundColor = "blue";
+            })
+            .catch((error) => {
+              statusMessage.textContent = "An error occurred: " + error;
+              startButton.disabled = false;
+              startButton.style.backgroundColor = "#333";
+              startButton.textContent = "Start Training";
+            });
+        });
+
+        downloadButton.addEventListener("click", () => {
+          if (modelFileName) {
+            window.location.href = `/download_model?file=${modelFileName}`;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

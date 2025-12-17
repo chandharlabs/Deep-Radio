@@ -1,0 +1,143 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QHBoxLayout
+from PyQt5.QtCore import QTimer
+import SoapySDR
+from SoapySDR import *
+import sys
+import time
+
+# ===== CONFIGURATION =====
+SAMPLE_RATE = 60e6
+CENTER_FREQ = 3200e6
+TX_GAIN = 50  # Reduced TX gain to reduce leakage
+RX_GAIN = 60
+
+# ===== Generate Zadoff-Chu Sequence =====
+def generate_zc_sequence(u=25, N=511):
+    n = np.arange(N)
+    zc = np.exp(-1j * np.pi * u * n * (n + 1) / N)
+    return zc.astype(np.complex64)
+
+zc_seq = generate_zc_sequence()
+zc_upsampled = np.repeat(zc_seq, 4)
+tx_burst = np.concatenate([zc_upsampled, np.zeros(1000)])
+tx_signal = tx_burst.astype(np.complex64)  # Send only one burst
+NUM_SAMPLES = len(tx_signal) + 4096  # Add margin for delayed paths
+
+class CIRAnalyzer(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Live CIR + PDP (TX0→RX0)")
+
+        layout = QVBoxLayout()
+        self.canvas = FigureCanvasQTAgg(plt.figure(figsize=(10, 8)))
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+
+        button_layout = QHBoxLayout()
+        self.start_button = QPushButton("Start")
+        self.start_button.clicked.connect(self.start_live)
+        button_layout.addWidget(self.start_button)
+
+        self.pause_button = QPushButton("Pause")
+        self.pause_button.clicked.connect(self.pause_live)
+        button_layout.addWidget(self.pause_button)
+
+        layout.addLayout(button_layout)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+        self.ax1 = self.canvas.figure.add_subplot(211)
+        self.ax2 = self.canvas.figure.add_subplot(212)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.capture_and_plot)
+
+        self.init_sdr()
+
+    def init_sdr(self):
+        self.sdr = SoapySDR.Device(dict(driver="lime"))
+        self.sdr.setSampleRate(SOAPY_SDR_TX, 0, SAMPLE_RATE)
+        self.sdr.setFrequency(SOAPY_SDR_TX, 0, CENTER_FREQ)
+        self.sdr.setGain(SOAPY_SDR_TX, 0, TX_GAIN)
+        self.tx_stream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
+
+        self.sdr.setSampleRate(SOAPY_SDR_RX, 0, SAMPLE_RATE)
+        self.sdr.setFrequency(SOAPY_SDR_RX, 0, CENTER_FREQ)
+        self.sdr.setGain(SOAPY_SDR_RX, 0, RX_GAIN)
+        self.rx_stream = self.sdr.setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32)
+
+    def tx_once(self):
+        self.sdr.activateStream(self.tx_stream)
+        self.sdr.writeStream(self.tx_stream, [tx_signal], len(tx_signal))
+        self.sdr.deactivateStream(self.tx_stream)
+
+    def capture_samples(self):
+        self.sdr.activateStream(self.rx_stream)
+        buff = np.zeros(NUM_SAMPLES, np.complex64)
+        sr = self.sdr.readStream(self.rx_stream, [buff], NUM_SAMPLES)
+        self.sdr.deactivateStream(self.rx_stream)
+        return buff[:sr.ret] if sr.ret > 0 else np.zeros(NUM_SAMPLES, dtype=np.complex64)
+
+    def compute_cir(self, rx):
+        zc_ref = zc_upsampled
+        corr = np.correlate(rx, zc_ref, mode='valid')
+        corr = corr / (np.linalg.norm(zc_ref)**2 + 1e-12)
+        start_idx = np.argmax(np.abs(corr))
+        cir = corr[start_idx:start_idx + len(zc_ref)]
+        cir = np.pad(cir, (0, NUM_SAMPLES - len(cir)), 'constant')
+        return cir
+
+    def capture_and_plot(self):
+        self.tx_once()
+        time.sleep(0.01)
+        rx = self.capture_samples()
+        cir = self.compute_cir(rx)
+        cir_mag = np.abs(cir)
+        pdp = cir_mag ** 2
+        pdp /= np.sum(pdp) + 1e-12
+
+        delays = np.arange(len(pdp))
+        mu = np.sum(delays * pdp)
+        sigma = np.sqrt(np.sum(pdp * (delays - mu) ** 2)) * (1 / SAMPLE_RATE) * 1e6
+
+        self.ax1.clear()
+        self.ax1.plot(np.arange(len(cir_mag)) / SAMPLE_RATE * 1e6, 20 * np.log10(cir_mag + 1e-12))
+        self.ax1.set_ylabel("CIR (dB)")
+        self.ax1.set_title(f"CIR | RMS Delay Spread = {sigma:.2f} µs")
+        self.ax1.grid(True)
+
+        self.ax2.clear()
+        time_axis = np.arange(len(pdp)) / SAMPLE_RATE * 1e6
+        pdp_db = 10 * np.log10(pdp + 1e-12)
+        threshold_db = np.max(pdp_db) - 6
+        strong_indices = np.where(pdp_db >= threshold_db)[0]
+
+        self.ax2.plot(time_axis, pdp_db, label="Normalized PDP", color='green')
+        self.ax2.scatter(time_axis[strong_indices], pdp_db[strong_indices], color='red', s=60, label='Strong Paths')
+        self.ax2.set_title("Normalized Power Delay Profile (PDP)")
+        self.ax2.set_xlabel("Delay (µs)")
+        self.ax2.set_ylabel("Power (dB)")
+        self.ax2.set_ylim(-60, 0)
+        self.ax2.grid(True)
+        self.ax2.legend()
+
+        self.canvas.draw()
+
+    def start_live(self):
+        self.timer.start(1000)  # every 1 second
+
+    def pause_live(self):
+        self.timer.stop()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = CIRAnalyzer()
+    window.show()
+    sys.exit(app.exec_())
+

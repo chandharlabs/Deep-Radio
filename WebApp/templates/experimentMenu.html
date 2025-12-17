@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep Radio Experiments</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .banner {
+        width: 100%;
+        height: 10%;
+        background-color: #c1156f;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .container {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .container button {
+        width: 200px;
+        padding: 20px;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        background-color: #333;
+        transition: background-color 0.3s;
+      }
+      .container button:hover {
+        background-color: #555;
+      }
+      h2 {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner">
+      <h1>Deep Radio Experiments</h1>
+      <p>By Chandhar Research Labs</p>
+    </div>
+    <h2 style={    text-align: center}>Select the Experiment</h2>
+    <div class="container">
+      <button onclick="location.href='/signalClassification'">
+        Signal Classification
+      </button>
+      <button onclick="location.href='/bpsk_message_transmission'">BPSK Message Transmission</button>
+      <button onclick="location.href='/bpsk_message_reception'">BPSK Message Reception</button>
+      <button onclick="location.href='/signal_generator_5g'">5G Signal Generation</button>
+      <button onclick="location.href='/jammer'">Jammer</button>
+      <button onclick="location.href='/fmtx'">FM Transmission</button>
+    </div>
+  </body>
+</html>
