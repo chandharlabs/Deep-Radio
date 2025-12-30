@@ -42,7 +42,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 import matplotlib.pyplot as plt
-from rtlsdr import RtlSdr, librtlsdr
 
 try:
     from rtlsdr import RtlSdr
@@ -212,27 +211,22 @@ def main():
         ax.legend()
 
     # Source setup
-
-
     sdr = None
-    if not args.simulate:
+    if not args.simulate and RtlSdr is not None:
         try:
-            devs = librtlsdr.rtlsdr_get_device_count()
-            if devs == 0:
-                raise RuntimeError("No RTL-SDR device found")
-
             sdr = RtlSdr()
             sdr.sample_rate = fs
             sdr.center_freq = args.fc
-            sdr.gain = args.gain if args.gain >= 0 else 'auto'
-
-            print("[INFO] RTL-SDR detected and initialized")
-
+            if args.gain >= 0:
+                sdr.gain = args.gain
+            else:
+                sdr.gain = 'auto'
         except Exception as e:
-            print(f"[ERROR] RTL-SDR not available: {e}")
-            print("[INFO] Switching to simulation mode")
+            print(f"[WARN] RTL-SDR init failed: {e}. Falling back to simulator.")
+            sdr = None
             args.simulate = True
-
+    else:
+        args.simulate = True
 
     # Capture helper
     def get_frame():
